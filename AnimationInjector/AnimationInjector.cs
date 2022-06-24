@@ -8,36 +8,39 @@ namespace Tyto.Utilities
     [RequireComponent(typeof(Animator))]
     public class AnimationInjector : MonoBehaviour
     {
-        [SerializeField] private AvatarMask fullBodyMask;
+        [SerializeField] private AvatarMask _fullBodyMask;
 
-        private int currentAnimationIndex = 0;
-        private int playableTransitionCount = 0;
-        private Animator animator;
-        private PlayableGraph playableGraph;
-        private RuntimeAnimatorController animatorController;
-        private AnimationLayerMixerPlayable layerMixerPlayable;
+        private int _currentAnimationIndex = 0;
+        private int _playableTransitionCount = 0;
+        private Animator _animator;
+        private PlayableGraph _playableGraph;
+        private RuntimeAnimatorController _animatorController;
+        private AnimationLayerMixerPlayable _layerMixerPlayable;
+
+        public int GetCurrentAnimationIndex => _currentAnimationIndex;
+        public AnimationLayerMixerPlayable GetAnimationLayerMixerPlayable => _layerMixerPlayable;
 
         private void Start()
         {
-            animator = GetComponent<Animator>();
+            _animator = GetComponent<Animator>();
 
-            if (fullBodyMask == null)
+            if (_fullBodyMask == null)
             {
-                fullBodyMask = new AvatarMask();
-                fullBodyMask.name = "GeneratedFullBodyMask";
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Root, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Body, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Head, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftLeg, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightLeg, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftArm, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightArm, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFingers, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFingers, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFootIK, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFootIK, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftHandIK, true);
-                fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightHandIK, true);
+                _fullBodyMask = new AvatarMask();
+                _fullBodyMask.name = "GeneratedFullBodyMask";
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Root, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Body, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Head, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftLeg, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightLeg, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftArm, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightArm, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFingers, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFingers, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFootIK, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFootIK, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftHandIK, true);
+                _fullBodyMask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightHandIK, true);
             }
 
             SetupPlayableGraph();
@@ -45,32 +48,32 @@ namespace Tyto.Utilities
 
         void OnDisable()
         {
-            playableGraph.Destroy();
+            _playableGraph.Destroy();
         }
 
         private void SetupPlayableGraph()
         {
-            playableGraph = PlayableGraph.Create("AnimationGraph");
-            layerMixerPlayable = AnimationLayerMixerPlayable.Create(playableGraph, 4);
-            animatorController = animator.runtimeAnimatorController;
-            var animatorControllerPlayable = AnimatorControllerPlayable.Create(playableGraph, animatorController);
-            playableGraph.Connect(animatorControllerPlayable, 0, layerMixerPlayable, 0);
-            layerMixerPlayable.SetInputWeight(0, 1);
-            AnimationPlayableUtilities.Play(animator, layerMixerPlayable, playableGraph);
+            _playableGraph = PlayableGraph.Create("AnimationGraph");
+            _layerMixerPlayable = AnimationLayerMixerPlayable.Create(_playableGraph, 4);
+            _animatorController = _animator.runtimeAnimatorController;
+            var animatorControllerPlayable = AnimatorControllerPlayable.Create(_playableGraph, _animatorController);
+            _playableGraph.Connect(animatorControllerPlayable, 0, _layerMixerPlayable, 0);
+            _layerMixerPlayable.SetInputWeight(0, 1);
+            AnimationPlayableUtilities.Play(_animator, _layerMixerPlayable, _playableGraph);
         }
 
         private void RemovePlayable(int index)
         {
-            var playable = layerMixerPlayable.GetInput(index);
-            layerMixerPlayable.DisconnectInput(index);
-            layerMixerPlayable.SetInputWeight(index, 0);
+            var playable = _layerMixerPlayable.GetInput(index);
+            _layerMixerPlayable.DisconnectInput(index);
+            _layerMixerPlayable.SetInputWeight(index, 0);
             playable.Destroy();
         }
 
         private IEnumerator TransitAnimation(AnimationLayerMixerPlayable layerMixerPlayable, float time, int transitIndex)
         {
             var waitTime = Time.timeSinceLevelLoadAsDouble + time;
-            var initialIndex = currentAnimationIndex;
+            var initialIndex = _currentAnimationIndex;
 
             var initialWeight = Vector3.zero;
             initialWeight.x = layerMixerPlayable.GetInputWeight(1);
@@ -114,34 +117,34 @@ namespace Tyto.Utilities
             });
         }
 
-        private IEnumerator StartAnimation(AnimationClip animationClip, AvatarMask avatarMask, float fadeTime)
+        private IEnumerator StartAnimation(AnimationClip animationClip, float fadeTime, AvatarMask avatarMask)
         {
-            var fromIndex = currentAnimationIndex;
-            var toIndex = currentAnimationIndex == 3 ? 1 : currentAnimationIndex + 1;
-            layerMixerPlayable.SetLayerMaskFromAvatarMask((uint)toIndex, avatarMask);
+            var fromIndex = _currentAnimationIndex;
+            var toIndex = _currentAnimationIndex == 3 ? 1 : _currentAnimationIndex + 1;
+            _layerMixerPlayable.SetLayerMaskFromAvatarMask((uint)toIndex, avatarMask);
 
-            if (layerMixerPlayable.GetInput(toIndex).IsValid()) RemovePlayable(toIndex);
+            if (_layerMixerPlayable.GetInput(toIndex).IsValid()) RemovePlayable(toIndex);
 
-            var temporaryPlayable = AnimationClipPlayable.Create(playableGraph, animationClip);
-            layerMixerPlayable.ConnectInput(toIndex, temporaryPlayable, 0);
-            currentAnimationIndex = toIndex;
-            playableTransitionCount++;
-            yield return TransitAnimation(layerMixerPlayable, fadeTime, toIndex);
+            var temporaryPlayable = AnimationClipPlayable.Create(_playableGraph, animationClip);
+            _layerMixerPlayable.ConnectInput(toIndex, temporaryPlayable, 0);
+            _currentAnimationIndex = toIndex;
+            _playableTransitionCount++;
+            yield return TransitAnimation(_layerMixerPlayable, fadeTime, toIndex);
 
-            if (fromIndex != 0 && layerMixerPlayable.GetInput(fromIndex).IsValid()) RemovePlayable(fromIndex);
+            if (fromIndex != 0 && _layerMixerPlayable.GetInput(fromIndex).IsValid()) RemovePlayable(fromIndex);
         }
 
         private IEnumerator EndAnimation(float fadeTime)
         {
-            yield return TransitAnimation(layerMixerPlayable, fadeTime, 0);
-            currentAnimationIndex = 0;
-            playableTransitionCount++;
+            yield return TransitAnimation(_layerMixerPlayable, fadeTime, 0);
+            _currentAnimationIndex = 0;
+            _playableTransitionCount++;
 
             for (int i = 1; i <= 3; i++)
-                if (layerMixerPlayable.GetInput(i).IsValid()) RemovePlayable(i);
+                if (_layerMixerPlayable.GetInput(i).IsValid()) RemovePlayable(i);
         }
 
-        private IEnumerator StartAndEndAnimation(AnimationClip animationClip, AvatarMask avatarMask, float fadeInTime, float fadeOutTime)
+        private IEnumerator StartAndEndAnimation(AnimationClip animationClip, float fadeInTime, float fadeOutTime, AvatarMask avatarMask)
         {
             if (fadeInTime + fadeOutTime > animationClip.length)
             {
@@ -152,21 +155,21 @@ namespace Tyto.Utilities
                 fadeOutTime -= surplus * outRate;
             }
 
-            var localTransitionCount = playableTransitionCount + 1;
-            yield return StartAnimation(animationClip, avatarMask, fadeInTime);
-            if (playableTransitionCount != localTransitionCount) yield break;
+            var localTransitionCount = _playableTransitionCount + 1;
+            yield return StartAnimation(animationClip, fadeInTime, avatarMask);
+            if (_playableTransitionCount != localTransitionCount) yield break;
             yield return new WaitForSeconds(animationClip.length - fadeInTime - fadeOutTime);
-            if (playableTransitionCount != localTransitionCount) yield break;
+            if (_playableTransitionCount != localTransitionCount) yield break;
             yield return EndAnimation(fadeOutTime);
         }
 
-        public void SetAnimation(AnimationClip animationClip, AvatarMask avatarMask, float fadeTime)
+        public void SetAnimation(AnimationClip animationClip, float fadeTime, AvatarMask avatarMask)
         {
-            StartCoroutine(StartAnimation(animationClip, avatarMask, fadeTime));
+            StartCoroutine(StartAnimation(animationClip, fadeTime, avatarMask));
         }
         public void SetAnimation(AnimationClip animationClip, float fadeTime)
         {
-            StartCoroutine(StartAnimation(animationClip, fullBodyMask, fadeTime));
+            StartCoroutine(StartAnimation(animationClip, fadeTime, _fullBodyMask));
         }
 
         public void ResetAnimation(float fadeTime)
@@ -174,13 +177,13 @@ namespace Tyto.Utilities
             StartCoroutine(EndAnimation(fadeTime));
         }
 
-        public void PlayAnimation(AnimationClip animationClip, AvatarMask avatarMask, float fadeInTime, float fadeOutTime)
+        public void PlayAnimation(AnimationClip animationClip, float fadeInTime, float fadeOutTime, AvatarMask avatarMask)
         {
-            StartCoroutine(StartAndEndAnimation(animationClip, avatarMask, fadeInTime, fadeOutTime));
+            StartCoroutine(StartAndEndAnimation(animationClip, fadeInTime, fadeOutTime, avatarMask));
         }
         public void PlayAnimation(AnimationClip animationClip, float fadeInTime, float fadeOutTime)
         {
-            StartCoroutine(StartAndEndAnimation(animationClip, fullBodyMask, fadeInTime, fadeOutTime));
+            StartCoroutine(StartAndEndAnimation(animationClip, fadeInTime, fadeOutTime, _fullBodyMask));
         }
     }
 }
