@@ -138,9 +138,10 @@ namespace Tyto.Utilities
 
         private IEnumerator EndAnimation(float fadeTime)
         {
-            yield return TransitAnimation(_layerMixerPlayable, fadeTime, 0);
+            var localTransitionCount = _playableTransitionCount;
             _currentAnimationIndex = 0;
-            _playableTransitionCount++;
+            yield return TransitAnimation(_layerMixerPlayable, fadeTime, 0);
+            if (_playableTransitionCount != localTransitionCount) yield break;
 
             for (int i = 1; i <= 3; i++)
                 if (_layerMixerPlayable.GetInput(i).IsValid()) RemovePlayable(i);
