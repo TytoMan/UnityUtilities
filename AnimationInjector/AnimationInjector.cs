@@ -92,6 +92,8 @@ namespace Tyto.Utilities
 
             yield return new WaitWhile(() =>
             {
+                if (_currentAnimationIndex != initialIndex) return false;
+
                 var diff = waitTime - Time.timeSinceLevelLoadAsDouble;
                 if (diff > 0)
                 {
